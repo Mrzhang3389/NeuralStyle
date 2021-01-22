@@ -44,10 +44,6 @@ async def style_fusion(content_image: UploadFile = File(...),
     style_img = io.BytesIO(style_img)
     content_image = imread(content_image)
     style_images = [imread(style_img)]
-
-    dir = "./result"
-    if not os.path.exists(dir):
-        os.makedirs(dir)
     network = './imagenet-vgg-verydeep-19.mat'  # 网络参数的路径(默认为imagenet-vgg-verydeep-19.mat)
     output = "./result/result.jpg"  # 默认融合风格后结果图像的输出路径.
     checkpoint_output = "./result/output_{:05}.jpg"  # (默认'./result/output_{:05}.jpg)', 可选 None, 用于保存每个阶段的风格迁移图像.
