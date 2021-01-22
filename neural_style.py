@@ -7,32 +7,38 @@ from PIL import Image
 from stylize import stylize
 from collections import OrderedDict
 
-content = "examples/content.jpg"  # 内容图片
-styles = ["examples/style.jpg"]  # 一个或多个样式图像
-output = "test.jpg"
+'''
+运行500-2000次会产生不错的结果。
+--content-weight
+--style-weight
+--learning-rate
+'''
+content = "style/1.jpeg"  # 内容图片
+styles = ["style/style1.jpg"]  # 一个或多个样式图像
+output = "./result/result.jpg"
 # default arguments
-content_weight = 5e0  # 含量重量（默认5e0）
-content_weight_blend = 1  # 内容权重blend，conv4_2 * blend + conv5_2 *（1-blend）'＃'（默认1）'
-style_weight = 5e2  # 样式权重（默认5e2）
-tv_weight = 1e2  # 总变化正则化权重（默认1e2）
-style_layer_weight_exp = 1  # 样式层权重指数增加-'＃'权重（layer <n + 1>）= weight_exp * weight（layer <n>）'＃'（默认1）'
-learning_rate = 1e1  # 学习率（默认1e1）
-beta1 = 0.9  # Adam：beta1参数（默认0.9）
-beta2 = 0.999  # Adam：beta2参数（默认0.999）
-epsilon = 1e-08  # Adam：epsilon参数（默认1e-08）
-STYLE_SCALE = 1.0
-iterations = 1000  # 迭代（默认1000）
-network = 'imagenet-vgg-verydeep-19.mat'  # 网络参数的路径（默认为imagenet-vgg-verydeep-19.mat）
-pooling = 'max'  # 池层配置：最大或平均（默认max 可选 avg）
-progress_write = False  # 将迭代进度数据写入OUTPUT目录
-progress_plot = False  # 将迭代进度数据绘制到OUTPUT目录
-checkpoint_output = None  # 检查点输出格式, e.g. output_{:05}.jpg or 'output_%%05d.jpg
-checkpoint_iterations = None  # 检查点频率
-width = None  # 输出宽度
-style_scales = None  # 一个或多个样式标尺
-print_iterations = None  # 统计打印频率
-preserve_colors = None  # 仅样式转移（保留颜色）-如果不需要颜色转移
-overwrite = None  # 即使已经有该名称的文件也要写入文件
+content_weight = 5e0  # 含量重量(默认5e0)
+style_weight = 5e2  # 样式权重(默认5e2)
+learning_rate = 1e1  # 学习率(默认1e1)
+content_weight_blend = 1  # 指定内容传输层的系数，数值越小越抽象，该值应在[0.0, 1.0]。(默认值1)
+tv_weight = 1e2  # 总变化正则化权重(默认1e2)
+style_layer_weight_exp = 1  # 命令行参数可用于调整样式传输的“抽象”程度。较低的值意味着较精细的特征的样式传递将优于较粗糙的特征的样式传递，反之亦然。该值应在[0.0, 1.0]。(默认值1)
+beta1 = 0.9  # Adam：beta1参数(默认0.9)
+beta2 = 0.999  # Adam：beta2参数(默认0.999)
+epsilon = 1e-08  # Adam：epsilon参数(默认1e-08)
+STYLE_SCALE = 1.0  # (默认1.0)
+iterations = 1500  # 迭代(默认1000)
+network = 'imagenet-vgg-verydeep-19.mat'  # 网络参数的路径(默认为imagenet-vgg-verydeep-19.mat)
+pooling = 'max'  # 最大池倾向于具有更好的细节样式传输，但是在低频细节级别上可能会有麻烦。(默认max 可选avg)
+progress_write = False  # 将迭代进度数据写入OUTPUT目录 (默认Fasle)
+progress_plot = False  # 将迭代进度数据绘制到OUTPUT目录 (默认Fasle)
+checkpoint_output = "./result/output_{:05}.jpg"  # 检查点输出格式, 该值示例: ['output_{:05}.jpg', 'output_%%05d.jpg']  (默认None)
+checkpoint_iterations = 100  # 检查点频率  (默认None)
+width = None  # 输出宽度  (默认None)
+style_scales = None  # 一个或多个样式标尺  (默认None)
+print_iterations = None  # 统计打印频率  (默认None)
+preserve_colors = None  # 仅样式转移，保留颜色。(默认None 可选True)
+overwrite = True  # 即使已经有该名称的文件也要写入文件  (默认None)
 
 
 def fmt_imsave(fmt, iteration):
@@ -57,7 +63,7 @@ def main():
 
     if checkpoint_output is not None:
         if re.match(r'^.*(\{.*\}|%.*).*$', checkpoint_output) is None:
-            print("To save intermediate images, the checkpoint_output parameter must contain placeholders (e.g. `foo_{}.jpg` or `foo_%d.jpg`")
+            print("To save intermediate images, the checkpoint_output parameter must contain placeholders (e.g. `foo_{}.jpg` or `foo_%d.jpg`)")
 
     content_image = imread(content)
     style_images = [imread(style) for style in styles]
@@ -83,7 +89,7 @@ def main():
         style_blend_weights = [weight/total_blend_weight for weight in style_blend_weights]
 
     initial = None  # 初始图像
-    initial_noiseblend = None  # 初始图像与标准化噪声混合的比率（如果未指定初始图像，则使用内容图像）（默认None）
+    initial_noiseblend = None  # 初始图像与标准化噪声混合的比率(如果未指定初始图像，则使用内容图像)(默认None)
     if initial is not None:
         initial = scipy.misc.imresize(imread(initial), content_image.shape[:2])
         # Initial guess is specified, but not noiseblend - no noise should be blended
