@@ -39,7 +39,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
     `loss_vals` is not None.
 
     `loss_vals` is a dict with loss values for the current iteration, e.g.
-    ``{'content': 1.23, 'style': 4.56, 'tv': 7.89, 'total': 13.68}``.
+    ``{'content': 1.23, 'result': 4.56, 'tv': 7.89, 'total': 13.68}``.
 
     :rtype: iterator[tuple[int,image]]
     """
@@ -56,7 +56,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         style_layers_weights[style_layer] = layer_weight
         layer_weight *= style_layer_weight_exp
 
-    # normalize style layer weights
+    # normalize result layer weights
     layer_weights_sum = 0
     for style_layer in STYLE_LAYERS:
         layer_weights_sum += style_layers_weights[style_layer]
@@ -72,7 +72,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         for layer in CONTENT_LAYERS:
             content_features[layer] = net[layer].eval(feed_dict={image: content_pre})
 
-    # compute style features in feedforward mode
+    # compute result features in feedforward mode
     for i in range(len(styles)):
         g = tf.Graph()
         with g.as_default(), g.device('/cpu:0'), tf.Session() as sess:
@@ -113,7 +113,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
                     content_features[content_layer].size))
         content_loss += reduce(tf.add, content_losses)
 
-        # style loss
+        # result loss
         style_loss = 0
         for i in range(len(styles)):
             style_losses = []
@@ -140,7 +140,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         loss = content_loss + style_loss + tv_loss
 
         # We use OrderedDict to make sure we have the same order of loss types
-        # (content, tv, style, total) as defined by the initial costruction of
+        # (content, tv, result, total) as defined by the initial costruction of
         # the loss_store dict. This is important for print_progress() and
         # saving loss_arrs (column order) in the main script.
         #
@@ -153,7 +153,7 @@ def stylize(network, initial, initial_noiseblend, content, styles, preserve_colo
         # objects. In 3.6, the order is preserved in dict() in CPython, in 3.7
         # they finally made it part of the language spec. Thank you!
         loss_store = OrderedDict([('content', content_loss),
-                                  ('style', style_loss),
+                                  ('result', style_loss),
                                   ('tv', tv_loss),
                                   ('total', loss)])
 

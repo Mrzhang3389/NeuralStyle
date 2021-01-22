@@ -65,9 +65,6 @@ async def style_fusion(content_image: UploadFile = File(...),
             print(
                 "To save intermediate images, the checkpoint_output parameter must contain placeholders (e.g. `foo_{}.jpg` or `foo_%d.jpg`)")
 
-    # content_image = imread(content)
-    # style_images = [imread(style) for style in styles]
-
     if width is not None:
         new_shape = (int(math.floor(float(content_image.shape[0]) /
                                     content_image.shape[1] * width)), width)
