@@ -1,3 +1,4 @@
+-i https://mirrors.aliyun.com/pypi/simple/
 numpy
 Pillow
 scipy==1.1
